@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "@fontsource/poppins";
+@import "@fontsource/lora";
+
+@theme {
+  --font-poppins: "Poppins", sans-serif;
+  --font-lora: "Lora", serif;
+}

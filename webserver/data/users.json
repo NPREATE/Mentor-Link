@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Your Name",
+    "email": "youremail@email.com",
+    "password": "p@ssW0rd",
+    "role": "moderator"
+  },
+  {
+    "email": "nguyenngocphat16082005@gmail.com",
+    "password": "12345678@Phat"
+  },
+  {
+    "email": "an@gmail.com",
+    "password": "12345678@Phat"
+  }
+]
