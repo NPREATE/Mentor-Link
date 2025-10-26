@@ -7,7 +7,9 @@ import useAuth from "../ContextAPI/UseAuth"
 
 const signupSchema = z
   .object({
-    username: z.string().min(1, "Vui lòng điền vào trường này."),
+    username: z.string()
+      .min(1, "Vui lòng điền vào trường này.")
+      .max(27, "Tên đăng nhập không được vượt quá  ký tự."),
     email: z
       .email("Địa chỉ email không hợp lệ. Vui lòng thử lại")
       .min(1, "Vui lòng điền vào trường này.")
@@ -112,7 +114,7 @@ export default function SignUp() {
               <input
                 id="username"
                 type="text"
-                maxLength={255}
+                maxLength={20} // Thêm thuộc tính maxLength
                 placeholder="Tên đăng nhập"
                 {...register("username")}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition ${errors.username ? "border-red-500" : "border-gray-300"}`}
