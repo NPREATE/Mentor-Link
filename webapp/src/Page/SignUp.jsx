@@ -1,10 +1,11 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom" // (useNavigate vẫn được dùng ở đây, nhưng không dùng trong onSubmit)
 import * as z from "zod"
-import useAuth from "../ContextAPI/UseAuth"
+import useAuth from "../ContextAPI/UseAuth" // (File này của bạn là UseAuth.jsx)
 
+// (Schema... giữ nguyên)
 const signupSchema = z
   .object({
     username: z.string()
@@ -37,6 +38,10 @@ export default function SignUp() {
   const [serverMessage, setServerMessage] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  
+  // Mặc dù useNavigate có thể không dùng, nhưng để an toàn cứ giữ lại
+  //const navigate = useNavigate() 
+  
   const {
     register,
     handleSubmit,
@@ -67,7 +72,12 @@ export default function SignUp() {
 
       if (res.ok && result.token) {
         setServerMessage({ type: "success", text: result.message || "Đăng ký thành công!" })
-        signIn(result.token)
+        
+        // CHỈ CẦN GỌI signIn. AuthProvider sẽ lo việc điều hướng.
+        signIn(result.token) 
+
+        // ĐÃ XÓA LỆNH NAVIGATE GỐC Ở ĐÂY
+
       } else {
         setServerMessage({ type: "error", text: result.error || "Đăng ký không thành công." })
       }
@@ -77,12 +87,13 @@ export default function SignUp() {
   }
 
   return (
+    // ... (Toàn bộ phần JSX của bạn giữ nguyên, nó không có lỗi)
     <div className="flex min-h-screen bg-white">
+      {/* (Phần code bên trái màu đen) */}
       <div className="hidden md:flex md:w-2/3 bg-black text-white flex-col justify-between p-12">
         <div>
           <h1 className="text-2xl font-bold">MentorLink</h1>
         </div>
-
         <div className="text-center">
           <p className="text-4xl font-bold leading-tight mb-8">
             "Học tập thông minh
@@ -90,7 +101,6 @@ export default function SignUp() {
             phát triển không giới hạn"
           </p>
         </div>
-
         <div className="text-sm text-gray-400">
           <p>
             Môi trường học tập nâng động kết nối sinh viên, giảng viên và tư thức. Tạo động lực mỗi ngày để bạn vượt xa
@@ -99,22 +109,24 @@ export default function SignUp() {
         </div>
       </div>
 
+      {/* (Phần code form bên phải) */}
       <div className="w-full md:w-1/3 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="mb-8">
              <h2 className="text-3xl font-bold text-center text-black">Đăng ký</h2>
              <p className="text-center text-gray-600 text-sm mt-2">Tạo tài khoản mới để bắt đầu</p>
           </div>
-
+          
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div>
+            {/* (Tất cả các input field và button giữ nguyên) */}
+             <div>
               <label htmlFor="username" className="block text-sm font-semibold text-black mb-2">
                 Tên đăng nhập
               </label>
               <input
                 id="username"
                 type="text"
-                maxLength={20} // Thêm thuộc tính maxLength
+                maxLength={20}
                 placeholder="Tên đăng nhập"
                 {...register("username")}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition ${errors.username ? "border-red-500" : "border-gray-300"}`}
@@ -137,6 +149,7 @@ export default function SignUp() {
               {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
             </div>
 
+            {/* (Password) */}
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-black mb-2">
                 Mật khẩu
@@ -155,36 +168,16 @@ export default function SignUp() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                  >
-                    {showPassword ? (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L12 12"
-                      />
-                    ) : (
-                      <>
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.432 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                        />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </>
-                    )}
+                  {/* (SVG Icon) */}
+                  <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    {showPassword ? ( <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L12 12" /> ) : ( <> <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.432 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /> <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /> </> )}
                   </svg>
                 </button>
               </div>
               {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
             </div>
 
+            {/* (Confirmed Password) */}
             <div>
               <label htmlFor="confirmedPassword" className="block text-sm font-semibold text-black mb-2">
                 Xác nhận mật khẩu
@@ -203,30 +196,9 @@ export default function SignUp() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                  >
-                    {showConfirmPassword ? (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L12 12"
-                      />
-                    ) : (
-                      <>
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.432 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                        />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </>
-                    )}
+                  {/* (SVG Icon) */}
+                  <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    {showConfirmPassword ? ( <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L12 12" /> ) : ( <> <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.432 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /> <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /> </> )}
                   </svg>
                 </button>
               </div>
@@ -234,7 +206,8 @@ export default function SignUp() {
                 <p className="mt-1 text-xs text-red-600">{errors.confirmedPassword.message}</p>
               )}
             </div>
-
+            
+            {/* (Role) */}
             <div>
               <label className="block text-sm font-semibold text-black mb-3">Loại tài khoản</label>
               <div className="grid grid-cols-2 gap-3">
@@ -257,6 +230,7 @@ export default function SignUp() {
               {errors.role && <p className="mt-1 text-xs text-red-600">{errors.role.message}</p>}
             </div>
 
+            {/* (Server Message) */}
             {serverMessage && (
               <div
                 className={`p-3 rounded-lg text-sm ${
@@ -268,6 +242,7 @@ export default function SignUp() {
               </div>
             )}
 
+            {/* (Submit Button) */}
             <div>
               <button
                 type="submit"

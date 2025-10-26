@@ -1,6 +1,13 @@
 import { useContext } from 'react';
-import AuthContent from './AuthContext';
+import AuthContext from './AuthContext'; // Sửa tên AuthContent thành AuthContext
 
 export default function useAuth() {
-    return useContext(AuthContent);
+    const context = useContext(AuthContext);
+
+    // Thêm phần kiểm tra lỗi này
+    if (context === undefined) {
+        throw new Error("useAuth must be used within an AuthProvider");
+    }
+
+    return context;
 }
