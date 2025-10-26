@@ -23,7 +23,7 @@ const signupSchema = z
       .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ cái viết thường.")
       .regex(/[\W_]/, "Mật khẩu phải có ít nhất 1 ký tự đặc biệt."),
     confirmedPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu của bạn."),
-    accountType: z.enum(["tutor", "student"], {
+    role: z.enum(["tutor", "student"], {
       required_error: "Vui lòng chọn loại tài khoản.",
       invalid_type_error: "Vui lòng chọn loại tài khoản hợp lệ.",
     }),
@@ -48,7 +48,7 @@ export default function SignUp() {
     mode: "onChange",
   })
 
-  const selectedAccountType = watch("accountType")
+  const selectedrole = watch("role")
   const { signIn } = useAuth()
 
   const onSubmit = async (data) => {
@@ -57,10 +57,10 @@ export default function SignUp() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: data.username,
+          name: data.username,
           email: data.email,
           password: data.password,
-          accountType: data.accountType,
+          role: data.role,
         }),
       })
       const result = await res.json()
@@ -240,21 +240,21 @@ export default function SignUp() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => setValue("accountType", "tutor", { shouldValidate: true })}
-                  className={`py-2 px-4 rounded-lg border-2 font-medium transition ${selectedAccountType === "tutor" ? "border-black bg-gray-100 text-black" : "border-gray-300 text-gray-700 hover:border-gray-400"}`}
+                  onClick={() => setValue("role", "tutor", { shouldValidate: true })}
+                  className={`py-2 px-4 rounded-lg border-2 font-medium transition ${selectedrole === "tutor" ? "border-black bg-gray-100 text-black" : "border-gray-300 text-gray-700 hover:border-gray-400"}`}
                 >
                   Tutor
                 </button>
                 <button
                   type="button"
-                  onClick={() => setValue("accountType", "student", { shouldValidate: true })}
-                  className={`py-2 px-4 rounded-lg border-2 font-medium transition ${selectedAccountType === "student" ? "border-black bg-gray-100 text-black" : "border-gray-300 text-gray-700 hover:border-gray-400"}`}
+                  onClick={() => setValue("role", "student", { shouldValidate: true })}
+                  className={`py-2 px-4 rounded-lg border-2 font-medium transition ${selectedrole === "student" ? "border-black bg-gray-100 text-black" : "border-gray-300 text-gray-700 hover:border-gray-400"}`}
                 >
                   Sinh viên
                 </button>
               </div>
-              <input type="hidden" {...register("accountType")} />
-              {errors.accountType && <p className="mt-1 text-xs text-red-600">{errors.accountType.message}</p>}
+              <input type="hidden" {...register("role")} />
+              {errors.role && <p className="mt-1 text-xs text-red-600">{errors.role.message}</p>}
             </div>
 
             {serverMessage && (
