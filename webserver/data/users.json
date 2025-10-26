@@ -6,11 +6,9 @@
     "role": "moderator"
   },
   {
-    "email": "nguyenngocphat16082005@gmail.com",
-    "password": "12345678@Phat"
-  },
-  {
-    "email": "an@gmail.com",
-    "password": "12345678@Phat"
+    "name": "phat.nguyenngocphat1",
+    "email": "phat.nguyenngocphat16082005@hcmut.edu.vn",
+    "password": "12345678@Bo",
+    "role": "student"
   }
 ]
