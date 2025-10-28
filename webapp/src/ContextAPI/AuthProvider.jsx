@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import AuthContext from './AuthContext';
 
 function decodeJwtPayload(token) {
@@ -13,31 +13,41 @@ function decodeJwtPayload(token) {
     const jsonPayload = new TextDecoder('utf-8').decode(bytes);
     return JSON.parse(jsonPayload);
 }
+const getInitialUser = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        return null;
+    }
 
-export default function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(true);
-
-
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            try {
-                const payload = decodeJwtPayload(token);
-                setUser(payload);
-            } catch {
-                localStorage.removeItem("token");
-            }
+    try {
+        const payload = decodeJwtPayload(token);
+        if (payload.exp * 1000 < Date.now()) {
+            localStorage.removeItem("token"); 
+            return null;
         }
         
-        setIsLoading(false);
-    }, []);
+        return payload; 
+    } catch {
+        localStorage.removeItem("token");
+        return null;
+    }
+};
+
+export default function AuthProvider({ children }) {
+    const [user, setUser] = useState(getInitialUser); 
+    const navigate = useNavigate();
 
     const signIn = (token) => {
         try {
-            localStorage.setItem("token", token);
             const payload = decodeJwtPayload(token);
+            if (payload.exp * 1000 < Date.now()) {
+                 localStorage.removeItem("token");
+                 setUser(null);
+                 alert("Token is expired."); 
+                 return; 
+            }
+
+            localStorage.setItem("token", token);
             setUser(payload);
             navigate('/HomePage');
         } catch {
@@ -49,11 +59,11 @@ export default function AuthProvider({ children }) {
     const signOut = () => {
         setUser(null);
         localStorage.removeItem("token");
-        navigate('/SignInPage');
+        navigate('/SignInPage', { replace: true });
     };
-
+    
     return (
-        <AuthContext.Provider value={{ user, signIn, signOut, setUser, isLoading }}>
+        <AuthContext.Provider value={{ user, setUser, signIn, signOut }}>
             {children}
         </AuthContext.Provider>
     );
