@@ -82,7 +82,7 @@ export default function RegisterCoursePage() {
 			<div className="w-fit bg-black text-white text-xs font-semibold px-3 py-1 rounded-full mb-1">
 			{course.id}
 			</div>
-			<p className="text-gray-900 font-semibold tracking-tight">{course.name}</p>
+			<p className="text-gray-900 font-bold tracking-tight">{course.name}</p>
 			<p className="text-sm text-gray-500">{course.faculty}</p>
 				<div className="flex justify-end mt-2">
 					<button onClick={() => handleRegister(course)}
@@ -105,7 +105,7 @@ export default function RegisterCoursePage() {
             <div key={course.id} className="border border-gray-200 rounded-2xl p-5">
               <div className="inline-block bg-black text-white text-xs font-semibold px-3 py-1 rounded-full mb-1">
   				{course.id}</div>
-              <p className="text-gray-900 font-medium">{course.name}</p>
+              <p className="text-gray-900 font-bold">{course.name}</p>
               <p className="text-sm text-gray-500 mb-4">{course.faculty}</p>
 
               {expandedId === course.id && (
