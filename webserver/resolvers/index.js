@@ -21,7 +21,7 @@ export const resolvers = {
                 type
             };
             
-            const payload = { id: insertId};
+            const payload = { id: insertId, email: email, type: type, name: name};
             const secret = process.env.JWT_SECRET;
             const token = jwt.sign(payload, secret, { expiresIn: '4h' });
 
@@ -41,7 +41,7 @@ export const resolvers = {
             const valid = await bcrypt.compare(password, user.Password);
             if (!valid) throw new UserInputError('Mật khẩu không đúng');
 
-            const payload = { id: user.UserID};
+            const payload = { id: user.UserID, email: user.Email, type: user.Role, name: user.FullName};
             const secret = process.env.JWT_SECRET;
             const token = jwt.sign(payload, secret, { expiresIn: '4h' });
 

@@ -4,8 +4,8 @@ import SignUp from "./Page/SignUp"
 import ProfilePage from "./Page/ProfilePage"
 import Student_CourseRegistration from "./Page/Student_CourseRegistration"
 import AuthProvider from "./ContextAPI/AuthProvider"
-// 1. Import ProtectedRoute
 import ProtectedRoute from "./ContextAPI/ProtectedRoute"
+import RegisterCoursePage from "./Page/Student_CourseRegistration"
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 
@@ -40,10 +40,10 @@ function App() {
             } 
           />
           <Route 
-            path="/CourseRegistration" 
+            path="/Student_CourseRegistration" 
             element={
             <ProtectedRoute>
-            <Student_CourseRegistration />
+            <RegisterCoursePage />
             </ProtectedRoute>
             }
           />
