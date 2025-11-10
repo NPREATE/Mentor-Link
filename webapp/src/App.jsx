@@ -6,7 +6,7 @@ import ProfilePage from "./Page/ProfilePage"
 import AuthProvider from "./ContextAPI/AuthProvider"
 // 1. Import ProtectedRoute
 import ProtectedRoute from "./ContextAPI/ProtectedRoute"
-import RegisterCoursePage from "./Page/RegisterCoursePage"
+import RegisterCoursePage from "./Page/Student_CourseRegistration"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 
 function App() {
