@@ -1,28 +1,56 @@
-import React from "react"
-import AvailableCourses from "../Components/ui/AvailableCourses"
-import Header from "../Components/header.jsx" 
+import HomePage from "./Page/HomePage"
+import SignIn from "./Page/SignIn"
+import SignUp from "./Page/SignUp"
+import ProfilePage from "./Page/ProfilePage"
 
-export default function Student_CourseRegistration() {
+import AuthProvider from "./ContextAPI/AuthProvider"
+// 1. Import ProtectedRoute
+import ProtectedRoute from "./ContextAPI/ProtectedRoute"
+import RegisterCoursePage from "./Page/RegisterCoursePage"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+
+function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+    <Router>
+      <AuthProvider>
+        <Routes>
+          {/* Các Route công khai */}
 
-      <div className="max-w-7xl mx-auto py-8 px-6">
-        <h1 className="text-3xl font-bold text-center mb-6">Đăng ký môn học</h1>
+          <Route path="/" element={<SignIn />} />
+          <Route path="/SignInPage" element={<SignIn />} />
+          <Route path="/SignUpPage" element={<SignUp />} />
 
-        {/* Ô tìm kiếm */}
-        <div className="flex justify-center mb-8">
-          <input
-            type="text"
-            placeholder="Tìm kiếm môn học"
-            className="w-full max-w-xl px-4 py-2 border border-gray-300 bg-[#f2f2f2] rounded-xl shadow-sm outline-none focus:ring-2 focus:ring-blue-300"            
+          {/* Các Route được bảo vệ
+            Bọc các trang cần đăng nhập bằng ProtectedRoute 
+          */}
+          <Route 
+            path="/HomePage" 
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            } 
           />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <AvailableCourses />
-        </div>
-      </div>
-    </div>
+          <Route 
+            path="/ProfilePage" 
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/DangKyMon" 
+            element={
+              <ProtectedRoute>
+                <RegisterCoursePage />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </AuthProvider>
+    </Router>
   )
 }
+
+export default App
