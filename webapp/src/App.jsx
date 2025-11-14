@@ -40,7 +40,7 @@ function App() {
             } 
           />
           <Route 
-            path="/CourseRegistration" 
+            path="/Student_CourseRegistration" 
             element={
             <ProtectedRoute>
             <RegisterCoursePage />
