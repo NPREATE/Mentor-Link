@@ -39,6 +39,7 @@ export default function RegisterCoursePage() {
     setAvailable(available.filter((c) => c.id !== course.id));
   };
 
+
   const handleCancel = (course) => {
     setAvailable([...available, course]);
     setRegistered(registered.filter((c) => c.id !== course.id));
@@ -148,3 +149,5 @@ export default function RegisterCoursePage() {
   </div>
  );
 }
+
+
