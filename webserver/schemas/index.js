@@ -12,19 +12,6 @@ export const typeDefs = `#graphql
     user: User!
   }
 
-  type Mutation {
-    signup(name: String!, email: String!, password: String!, type: String!): AuthPayload
-    signin(email: String!, password: String!): AuthPayload
-    requestOtp(email: String!): RequestOtpResult!
-    verifyOtp(email: String!, code: String!): VerifyOtpResult!
-    enrollCourse(id: String!): Boolean!
-    updateUser(
-      email: String!
-      full_name: String
-      phone: String
-    ): User
-  }
-
   type RequestOtpResult {
     success: Boolean!
     expiresAt: String
@@ -40,21 +27,16 @@ export const typeDefs = `#graphql
     faculty: String!
   }
 
-  type Query {
-    _empty: String
+  type Mutation {
+    signup(name: String!, email: String!, password: String!, type: String!): AuthPayload
+    signin(email: String!, password: String!): AuthPayload
     requestOtp(email: String!): RequestOtpResult!
     verifyOtp(email: String!, code: String!): VerifyOtpResult!
     enrollCourse(id: String!): Boolean!
-    updateUser(
-      email: String!
-      full_name: String
-      phone: String
-    ): User
   }
 
   type Query {
     checkExistUser(email: String! ): Boolean!
     getCourse: [Course!]!
-    getUserByEmail(email: String!): User
   }
 `;

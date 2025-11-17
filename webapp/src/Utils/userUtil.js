@@ -43,28 +43,6 @@ export const findUser = async (email) => {
     return data;
 }
 
-export const fetchUserData = async (email) => {
-    const query  = `
-        query Query($email: String!) {
-            getUserByEmail(email: $email) {
-                id
-                name
-                email
-                phone
-                type
-            }
-        }
-    `;
-
-    const data = await graphQLRequest({ 
-        query, 
-        variables: {
-            email: email,
-        }
-    }); 
-    return data.data.getUserByEmail;
-}
-
 export const Signin = async (email, password) => {
     const query = `
         mutation Signin($email: String!, $password: String!) {
