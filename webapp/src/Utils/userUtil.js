@@ -27,6 +27,44 @@ export const Signup = async (name, email, password, type) => {
     return data;
 }
 
+export const findUser = async (email) => {
+    const query  = `
+        query Query($email: String!) {
+            checkExistUser(email: $email)
+        }
+    `;
+
+    const data = graphQLRequest({ 
+        query, 
+        variables: {
+            email : email,
+        }
+    }); 
+    return data;
+}
+
+export const fetchUserData = async (email) => {
+    const query  = `
+        query Query($email: String!) {
+            getUserByEmail(email: $email) {
+                id
+                name
+                email
+                phone
+                type
+            }
+        }
+    `;
+
+    const data = await graphQLRequest({ 
+        query, 
+        variables: {
+            email: email,
+        }
+    }); 
+    return data.data.getUserByEmail;
+}
+
 export const Signin = async (email, password) => {
     const query = `
         mutation Signin($email: String!, $password: String!) {
@@ -51,4 +89,69 @@ export const Signin = async (email, password) => {
     });
 
     return data;
+}
+
+export const requestOtp = async (email) => {
+    const query = `
+        mutation RequestOtp($email: String!) {
+            requestOtp(email: $email) {
+                expiresAt
+                success
+            }
+        }
+    `;
+
+    const data = graphQLRequest({
+        query, 
+        variables: {email: email}
+    });
+    return data;
+}
+
+export const verifyOtp = async (email, code) => {
+    const query = `
+    mutation VerifyOtp($email: String!, $code: String!) {
+        verifyOtp(email: $email, code: $code) {
+            success
+        }
+    }`;
+
+    const data = graphQLRequest({
+        query, 
+        variables: {
+            email: email, 
+            code: code,
+        }
+    });
+
+    return data;
+}
+
+export const updateUserData = async (userData) => {
+  const query = `
+    mutation UpdateUser(
+      $email: String!
+      $full_name: String
+      $phone: String
+    ) {
+      updateUser(
+        email: $email
+        full_name: $full_name
+        phone: $phone
+      ) {
+        id
+        name
+        email
+        phone
+        type
+      }
+    }
+  `;
+
+    const data = await graphQLRequest({
+        query,
+        variables: userData,
+    });
+
+    return data.data.updateUser;
 }

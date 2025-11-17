@@ -14,3 +14,15 @@ export async function createUser({ name, email, password, role }) {
   console.log('createduser', result);
   return result.insertId;
 }
+
+export async function _updateUser({ email, full_name, phone }) {
+  const [result] = await dbPool.execute(
+    `UPDATE User SET FullName = ?, Phone = ? WHERE Email = ?`,
+    [
+      full_name ?? "-",
+      phone ?? null, // undefined can't be used
+      email
+    ]
+  );
+  return result;
+}
