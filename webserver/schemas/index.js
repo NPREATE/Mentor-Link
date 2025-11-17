@@ -33,10 +33,17 @@ export const typeDefs = `#graphql
     requestOtp(email: String!): RequestOtpResult!
     verifyOtp(email: String!, code: String!): VerifyOtpResult!
     enrollCourse(id: String!): Boolean!
+    updateUser(
+      id: ID!
+      email: String!
+      full_name: String
+      phone: String
+    ): User
   }
 
   type Query {
     checkExistUser(email: String! ): Boolean!
     getCourse: [Course!]!
+    getUserByEmail(email: String!): User
   }
 `;
