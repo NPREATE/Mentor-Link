@@ -23,7 +23,7 @@ export default function ProfilePage() {
 
 	const [profile, setProfile] = useState({
 		userId: user.id,
-		mssv: '2352888',
+		mssv: '', // Cho phép nhập lần đầu
 		fullname: "-", // async => update later.
 		email: user.email,
 		phone: user.phone,
@@ -33,12 +33,10 @@ export default function ProfilePage() {
 		type: user.type,
 	});
 
+
 	const [editMode, setEditMode] = useState(false);
-	const [editData, setEditData] = useState({
-		if (profile) {
-			setEditData({ ...profile });
-		}
-	});
+	const [editData, setEditData] = useState({});
+	const [mssvEditable, setMssvEditable] = useState(true);
 	
 	useEffect(() => {
 		const fetchProfile = async () => {
@@ -59,6 +57,8 @@ export default function ProfilePage() {
 		if (profile) {
 			setEditData({ ...profile });
 			setEditMode(true);
+			// Nếu đã có MSSV thì không cho sửa nữa
+			setMssvEditable(profile.mssv === '' || profile.mssv === undefined);
 		}
 	};
 
@@ -73,13 +73,13 @@ export default function ProfilePage() {
 
 	const handleEditSave = async (e) => {
 		e.preventDefault();
-		
 		// Gọi mutation
 		const updatedUser = await updateUserData({
 			id: user.id,
-			email: editData.email,
+			email: profile.email, // Email không cho sửa
 			full_name: editData.fullname,
 			phone: editData.phone,
+			mssv: mssvEditable ? editData.mssv : profile.mssv,
 		});
 
 		if (updatedUser) {
@@ -88,9 +88,11 @@ export default function ProfilePage() {
 				fullname: updatedUser.name,
 				phone: updatedUser.phone,
 				email: updatedUser.email,
+				mssv: mssvEditable ? editData.mssv : prev.mssv,
 				type: updatedUser.type
 			}));
 			setEditMode(false);
+			setMssvEditable(false); // Sau khi lưu thì MSSV không cho sửa nữa
 		}
 	};
 
@@ -161,13 +163,36 @@ export default function ProfilePage() {
 						) : (
 							<form className="w-full space-y-4 mb-6" onSubmit={handleEditSave}>
 								<div className="flex justify-between items-center">
+									<span className="text-gray-500 font-medium">UserID</span>
+									<input
+										type="text"
+										name="userId"
+										value={profile.userId}
+										disabled
+										className="border border-gray-300 rounded px-2 py-1 w-2/3 text-gray-400 bg-gray-100 cursor-not-allowed"
+									/>
+								</div>
+								<div className="flex justify-between items-center">
+									<span className="text-gray-500 font-medium">MSSV</span>
+									<input
+										type="text"
+										name="mssv"
+										value={mssvEditable ? editData.mssv || '' : profile.mssv}
+										onChange={handleEditChange}
+										className={`border border-gray-300 rounded px-2 py-1 w-2/3 ${!mssvEditable ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'text-gray-900'}`}
+										required
+										disabled={!mssvEditable}
+										placeholder="Nhập MSSV lần đầu"
+									/>
+								</div>
+								<div className="flex justify-between items-center">
 									<span className="text-gray-500 font-medium">Email</span>
 									<input
 										type="email"
 										name="email"
-										value={editData.email}
-										onChange={handleEditChange}
-										className="border border-gray-300 rounded px-2 py-1 w-2/3 text-gray-900"
+										value={profile.email}
+										disabled
+										className="border border-gray-300 rounded px-2 py-1 w-2/3 text-gray-400 bg-gray-100 cursor-not-allowed"
 										required
 									/>
 								</div>
