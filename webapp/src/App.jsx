@@ -6,7 +6,7 @@ import Student_CourseRegistration from "./Page/Student_CourseRegistration"
 import AuthProvider from "./ContextAPI/AuthProvider"
 // 1. Import ProtectedRoute
 import ProtectedRoute from "./ContextAPI/ProtectedRoute"
-
+import TutorSchedule from "./Page/TutorSchedule"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Find_Tutor from "./Page/Find_turtor"
 
@@ -48,6 +48,11 @@ function App() {
             </ProtectedRoute>
             }
           />
+          <Route 
+            path="/TutorSchedule" 
+            element={
+            <ProtectedRoute>
+            <TutorSchedule />
            <Route 
             path="/Find_Tutor" 
             element={
