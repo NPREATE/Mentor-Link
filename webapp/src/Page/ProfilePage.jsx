@@ -109,7 +109,7 @@ export default function ProfilePage() {
 							className="w-24 h-24 rounded-full border-4 border-gray-200 bg-gray-100 object-cover mb-4"
 						/>
 						<h2 className="text-xl font-bold mb-1 text-center">{profile.fullname}</h2>
-						<p className="text-gray-500 text-center">{profile.role}</p>
+						<p className="text-gray-500 text-center">{profile.type}</p>
 					</div>
 					{/* Divider */}
 					<div className="w-px bg-gray-300 my-8" />
@@ -140,7 +140,7 @@ export default function ProfilePage() {
 										<span className="text-gray-500 font-medium">Khoa</span>
 										<span className="font-semibold text-gray-900">{profile.faculty}</span>
 									</div>
-									{profile.role === 'Tutor' && (
+									{profile.type === 'tutor' && (
 										<div className="flex justify-between items-center">
 											<span className="text-gray-500 font-medium">Chuyên môn</span>
 											<span className="font-semibold text-gray-900">{profile.major}</span>
@@ -221,7 +221,7 @@ export default function ProfilePage() {
 										))}
 									</select>
 								</div>
-								{profile.role === 'Tutor' && (
+								{profile.type === 'tutor' && (
 									<div className="flex justify-between items-center">
 										<span className="text-gray-500 font-medium">Chuyên môn</span>
 										<input
