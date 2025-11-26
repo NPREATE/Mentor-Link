@@ -8,6 +8,7 @@ const otpStore = {};
 
 export const setOtp = (email, otp, expire ) => {
   otpStore[email] = { otp, expire };
+  console.log("set otp", otpStore)
 };
 
 export const getOtp = (email) => otpStore[email];
@@ -21,6 +22,7 @@ setInterval(() => {
   for (const [email, data] of Object.entries(otpStore)) {
     if (now > data.expire) delete otpStore[email];
   }
+  console.log(otpStore);
 }, 60 * 1000);
 
 export function generateOtp() {

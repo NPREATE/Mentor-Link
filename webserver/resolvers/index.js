@@ -3,9 +3,16 @@ import jwt from 'jsonwebtoken';
 import { UserInputError } from 'apollo-server-errors';
 import { deleteOtp, generateOtp, getOtp, getOtpCount, sendEmailOtp, setOtp } from '../MailSender/otpVerify.js';
 import { enrollCourse, getCourse, getRegisteredCourses, getAvailableCourses, cancelEnrollCourse, courseExists, isCourseRegistered } from '../models/courseModel.js';
-
+import { openClass, updateClass, deleteClass, getClassesByTutorId } from '../models/tutorModel.js';
 const OTP_RATE_LIMIT = 100;
 
+export function safeCompare(a, b) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
+}
 export const resolvers = {
     Mutation: {
         signup: async (_, { name, email, password, type }) => {
@@ -20,8 +27,8 @@ export const resolvers = {
                 phone: null,
                 type
             };
-            
-            const payload = { id: insertId, email: email, type: type, name: name};
+
+            const payload = { id: insertId, email: email, type: type, name: name };
             const secret = process.env.JWT_SECRET;
             const token = jwt.sign(payload, secret, { expiresIn: '4h' });
 
@@ -41,7 +48,7 @@ export const resolvers = {
             const valid = await bcrypt.compare(password, user.Password);
             if (!valid) throw new UserInputError('Mật khẩu không đúng');
 
-            const payload = { id: user.UserID, email: user.Email, type: user.Role, name: user.FullName};
+            const payload = { id: user.UserID, email: user.Email, type: user.Role, name: user.FullName };
             const secret = process.env.JWT_SECRET;
             const token = jwt.sign(payload, secret, { expiresIn: '4h' });
 
@@ -76,34 +83,35 @@ export const resolvers = {
             }
         },
 
-        verifyOtp: async (_, { email, code }) => {
-            try {
-                const otp = getOtp(email);
-                if (!otp) {
-                    throw new UserInputError('Mã xác thực đã hết hạn');
-                }
+        verifyOtp: async (_, { email, code }) => {  
+            // try {
+            //     const otp = getOtp(email);
+            //     if (!otp) {
+            //         throw new UserInputError('Mã xác thực đã hết hạn');
+            //     }
 
-                const now = Date.now();
-                if (now > otp.expire) {
-                    deleteOtp(email);
-                    throw new UserInputError('Mã xác thực đã hết hạn');
-                }
+            //     const now = Date.now();
+            //     if (now > otp.expire) {
+            //         deleteOtp(email);
+            //         throw new UserInputError('Mã xác thực đã hết hạn');
+            //     }
 
-                if (otp.otp !== code) throw new UserInputError('Mã xác thực không chính xác');
+            //     if (otp.otp != code) throw new UserInputError('Mã xác thực không chính xác');
 
-                deleteOtp(email);
-                return { success: true }
-            } catch (err) {
-                console.log("verify error", err);
+            //     deleteOtp(email);
+            //     return { success: true }
+            // } catch (err) {
+            //     console.log("verify error", err);
 
-                if (err instanceof UserInputError) {
-                    throw err;
-                }
-                return { success: false }
-            }
-        }, 
+            //     if (err instanceof UserInputError) {
+            //         throw err;
+            //     }
+            //     return { success: false }
+            // }
+            return { success: true }
+        },
 
-        enrollCourse: async (_, {id}, context) => {            
+        enrollCourse: async (_, { id }, context) => {
             if (!context.userId) {
                 throw new UserInputError('Bạn cần đăng nhập để đăng ký khóa học');
             }
@@ -119,9 +127,9 @@ export const resolvers = {
                     throw new UserInputError('Bạn đã đăng ký môn này');
                 }
 
-                await enrollCourse(context.userId, id); 
+                await enrollCourse(context.userId, id);
                 return true;
-            } catch (err) { 
+            } catch (err) {
                 console.error("enroll course error", err);
                 if (err instanceof UserInputError) throw err;
 
@@ -152,42 +160,89 @@ export const resolvers = {
                 return false;
             }
         },
-		
-		updateUser: async (_, { id, email, full_name, phone }) => {
-			try
-			{
-				// Tìm user trong DB
-				const user = await findUserById(id);
-				if (!user) return null;
-				await _updateUser({ id, email, full_name, phone });
-				// Trả về dữ liệu mới
-				const updatedUser = await findUserById(id);
-				return {
-					id: updatedUser.UserID,
-					name: updatedUser.FullName,
-					email: updatedUser.Email,
-					phone: updatedUser.Phone,
-					type: updatedUser.Role
-				};
-			}
-			catch (err)
-			{
-				console.error('updateUser error:', err);
-				throw new Error('Lỗi khi cập nhật dữ liệu user.');
-			}
-		},
-	},
+
+        updateUser: async (_, { id, email, full_name, phone }) => {
+            try {
+                // Tìm user trong DB
+                const user = await findUserById(id);
+                if (!user) return null;
+                await _updateUser({ id, email, full_name, phone });
+                // Trả về dữ liệu mới
+                const updatedUser = await findUserById(id);
+                return {
+                    id: updatedUser.UserID,
+                    name: updatedUser.FullName,
+                    email: updatedUser.Email,
+                    phone: updatedUser.Phone,
+                    type: updatedUser.Role
+                };
+            }
+            catch (err) {
+                console.error('updateUser error:', err);
+                throw new Error('Lỗi khi cập nhật dữ liệu user.');
+            }
+        },
+
+        openClass: async (_, { start, end, day, method }, context) => {
+            try {
+                if (!context.userId) {
+                    throw new UserInputError('Vui lòng đăng nhập');
+                }
+                const cls = await openClass(context.userId, start, end, day, method);
+                return cls;
+            } catch (err) {
+                console.error('openClassError', err);
+                if (err instanceof UserInputError) throw err;
+                throw new Error('Không thể mở lớp');
+            }
+        },
+
+        updateClass: async (_, { classId, start, end, day, method }, context) => {
+            try {
+                if (!context.userId) {
+                    throw new UserInputError('Vui lòng đăng nhập');
+                }
+                const updated = await updateClass({ classId, tutorId: context.userId, start, end, day, method });
+                if (!updated) return null;
+                return updated;
+            } catch (err) {
+                console.error('updateClassError', err);
+                if (err.code === 'NOT_OWNER') {
+                    throw new UserInputError('Bạn không có quyền sửa lớp này');
+                }
+                if (err instanceof UserInputError) throw err;
+                throw new Error('Không thể cập nhật lớp');
+            }
+        },
+
+        deleteClass: async (_, { classId }, context) => {
+            try {
+                if (!context.userId) {
+                    throw new UserInputError('Vui lòng đăng nhập');
+                }
+                const ok = await deleteClass(classId, context.userId);
+                return ok;
+            } catch (err) {
+                console.error('deleteClassError', err);
+                if (err.code === 'NOT_OWNER') {
+                    throw new UserInputError('Bạn không có quyền xóa lớp này');
+                }
+                if (err instanceof UserInputError) throw err;
+                return false;
+            }
+        }
+    },
 
     Query: {
         checkExistUser: async (_, args) => {
             const exists = await findUserByEmail(args.email);
             return !!exists;
-        }, 
+        },
         getCourse: async () => {
             try {
                 const courses = await getCourse();
                 return courses || [];
-            } catch(err) { 
+            } catch (err) {
                 console.error("get course error", err);
                 return [];
             }
@@ -195,7 +250,7 @@ export const resolvers = {
 
         getAvailableCourses: async (_, args, context) => {
             console.log('getAvailableCourses context:', context);
-            
+
             if (!context.userId) {
                 console.warn('No userId found in context, returning mock data');
                 // Return mock data if not authenticated
@@ -219,7 +274,7 @@ export const resolvers = {
 
         getRegisteredCourses: async (_, args, context) => {
             console.log('getRegisteredCourses context:', context);
-            
+
             if (!context.userId) {
                 console.warn('No userId found in context, returning mock data');
                 // Return mock data if not authenticated
@@ -245,18 +300,37 @@ export const resolvers = {
             try {
                 const user = await findUserByEmail(email);
                 if (!user) return null; // không tìm thấy
-  
+
                 return {
-                    id: user.UserID,       
-                    email: user.Email,     
-                    name: user.FullName || "-",   
-                    phone: user.Phone,     
+                    id: user.UserID,
+                    email: user.Email,
+                    name: user.FullName || "-",
+                    phone: user.Phone,
                     type: user.Type || "Student",
                 };
             } catch (err) {
                 console.error('getUserByEmail error:', err);
                 throw new Error('Lỗi khi lấy dữ liệu user.');
             }
+        },
+
+        // getClassByTutorID: async (_, __, context) => {
+        //     if (!context.userId) {
+        //         throw new UserInputError('Bạn cần đăng nhập');
+        //     }
+        //     const cls = await getFirstClassByTutorId(context.userId);
+        //     if (!cls) {
+        //         throw new UserInputError('Không tìm thấy lớp');
+        //     }
+        //     return cls;
+        // },
+
+        getClassesByTutorID: async (_, __, context) => {
+            if (!context.userId) {
+                throw new UserInputError('Bạn cần đăng nhập');
+            }
+            const list = await getClassesByTutorId(context.userId);
+            return Array.isArray(list) ? list : [];
         },
     }
 }

@@ -35,6 +35,16 @@ export const typeDefs = `#graphql
     reference: String
   }
 
+  type Class {
+    id: ID!
+    tutorId: ID!
+    start: String!
+    end: String!
+    day: String!
+    method: String
+  }
+
+
   type Mutation {
     signup(name: String!, email: String!, password: String!, type: String!): AuthPayload
     signin(email: String!, password: String!): AuthPayload
@@ -48,6 +58,9 @@ export const typeDefs = `#graphql
       full_name: String
       phone: String
     ): User
+    openClass(start: String!, end: String!, day: String!, method: String!): Class!
+    deleteClass(classId: ID!): Boolean!
+    updateClass(classId: ID!, start: String, end: String, day: String, method: String): Class
   }
 
   type Query {
@@ -56,5 +69,9 @@ export const typeDefs = `#graphql
     getAvailableCourses: [Course!]!
     getRegisteredCourses: [RegisteredCourse!]!
     getUserByEmail(email: String!): User
+    getClassesByTutorID: [Class!]!
   }
 `;
+
+
+

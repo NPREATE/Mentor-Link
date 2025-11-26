@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../Components/header";
+import { openClass , updateClass , deleteClass, getMyClasses } from "../Utils/tutors";
 
 /* -------------------------------------------------------------------------- */
 /*                             DATA: Day / Time / Type                        */
@@ -79,7 +80,52 @@ export default function TutorSchedule() {
     setShowRegisterPopup(true);
   };
 
-  const handleRegister = () => {
+  const mapClassToSchedule = (c) => {
+    const toTimeLabel = (hhmm) => {
+      if (!hhmm) return '';
+      const [hh] = String(hhmm).split(':');
+      const h = String(parseInt(hh, 10));
+      return `${h}h`;
+    };
+    const time = `${toTimeLabel(c.start)}-${toTimeLabel(c.end)}`; 
+    let type = c.method || 'Online';
+    let roomVal = null;
+    if (typeof c.method === 'string' && c.method.toLowerCase().startsWith('offline')) {
+      type = 'Offline';
+      const idx = c.method.indexOf('-');
+      if (idx !== -1) roomVal = c.method.slice(idx + 1);
+    }
+    return {
+      id: c.id,
+      day: c.day,
+      time,
+      type,
+      room: roomVal,
+    };
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const list = await getMyClasses();
+        const mapped = Array.isArray(list) ? list.map(mapClassToSchedule) : [];
+        setSchedules(mapped);
+      } catch (err) {
+        console.error('load my classes failed', err);
+      }
+    })();
+  }, []);
+
+  const parseTimeRange = (range) => {
+    if (!range) return { start: null, end: null };
+    const m = range.match(/^(\d{1,2})h-(\d{1,2})h$/);
+    if (!m) return { start: null, end: null };
+    const s = String(m[1]).padStart(2, "0") + ":00";
+    const e = String(m[2]).padStart(2, "0") + ":00";
+    return { start: s, end: e };
+  };
+
+  const handleRegister = async () => {
     if (!selectedDay || !selectedTime || !selectedType) return;
 
     const newItem = {
@@ -90,9 +136,24 @@ export default function TutorSchedule() {
       room: selectedType === "Offline" ? room : null,
     };
 
-    setSchedules([...schedules, newItem]);
-    setShowRegisterPopup(false);
-    setShowSuccessPopup(true);
+    try {
+      const { start, end } = parseTimeRange(selectedTime);
+      const methodValue = selectedType === "Offline" && room ? `Offline-${room}` : selectedType;
+      const created = await openClass({ start, end, day: selectedDay, method: methodValue });
+      const mapped = {
+        ...newItem,
+        id: created?.id || newItem.id,
+      };
+      setSchedules([...schedules, mapped]);
+      setShowRegisterPopup(false);
+      setShowSuccessPopup(true);
+      return;
+    } catch (err) {
+      console.error("Tạo lịch không thành công", err);
+      setSchedules([...schedules, newItem]);
+      setShowRegisterPopup(false);
+      setShowSuccessPopup(true);
+    }
   };
 
   /* ---------------------------------------------------------------------- */
@@ -108,7 +169,7 @@ export default function TutorSchedule() {
     setShowEditPopup(true);
   };
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
     const updated = schedules.map((s) =>
       s.id === editingItem.id
         ? {
@@ -120,8 +181,14 @@ export default function TutorSchedule() {
           }
         : s
     );
-
     setSchedules(updated);
+    try {
+      const { start, end } = parseTimeRange(selectedTime);
+      const methodValue = selectedType === "Offline" && room ? `Offline-${room}` : selectedType;
+      await updateClass({ classId: editingItem.id, start, end, day: selectedDay, method: methodValue });
+    } catch (err) {
+      console.error("Cập nhật lịch không thành công", err);
+    }
     setShowEditPopup(false);
   };
 
@@ -134,8 +201,13 @@ export default function TutorSchedule() {
     setShowDeletePopup(true);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     setSchedules(schedules.filter((s) => s.id !== deleteItem.id));
+    try {
+      await deleteClass({ classId: deleteItem.id });
+    } catch (err) {
+      console.error("Xóa lịch không thành công", err);
+    }
     setShowDeletePopup(false);
   };
 

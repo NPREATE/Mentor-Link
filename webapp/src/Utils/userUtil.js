@@ -34,7 +34,7 @@ export const findUser = async (email) => {
         }
     `;
 
-    const data = graphQLRequest({ 
+    const data = await graphQLRequest({ 
         query, 
         variables: {
             email : email,
@@ -101,7 +101,7 @@ export const requestOtp = async (email) => {
         }
     `;
 
-    const data = graphQLRequest({
+    const data = await graphQLRequest({
         query, 
         variables: {email: email}
     });
@@ -116,7 +116,7 @@ export const verifyOtp = async (email, code) => {
         }
     }`;
 
-    const data = graphQLRequest({
+    const data = await graphQLRequest({
         query, 
         variables: {
             email: email, 
@@ -124,7 +124,7 @@ export const verifyOtp = async (email, code) => {
         }
     });
 
-    return data;
+    return data?.data?.verifyOtp;
 }
 
 export const updateUserData = async (userData) => {

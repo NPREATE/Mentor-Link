@@ -44,16 +44,12 @@ export default function SignUp() {
   const [pendingData, setPendingData] = useState(null);
 
   const handleVerifyOtp = async (code) => {
-    const res = await verifyOtp(otpEmail, code.trim());
+    const res = await verifyOtp(otpEmail, String(code.trim()));
     console.log("handleverifyres", res);
-    const is_success = !!res?.data?.verifyOtp?.success;
-
-    if (res.errors && res.errors.length) {
-      throw new Error(res.errors[0].message)
+    const is_success = !!res?.success;
+    if (!is_success) {
+      throw new Error("Mã xác thực không chính xác")
     }
-
-    console.log("is success", is_success);
-    if (!is_success) { throw new Error("Mã xác thực không chính xác") }
 
     if (pendingData) {
       const signupRes = await Signup(pendingData.username, pendingData.email, pendingData.password, pendingData.role);

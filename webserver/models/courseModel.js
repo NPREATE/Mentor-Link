@@ -1,6 +1,5 @@
 import dbPool from '../database.js';
 
-// Mock data for fallback
 const mockCourses = [
   { id: 'C02003', name: 'Cấu trúc dữ liệu và giải thuật', faculty: 'Khoa Khoa học và Kỹ thuật Máy tính' },
   { id: 'M11005', name: 'Giải tích 2', faculty: 'Khoa Khoa Học Ứng Dụng' },
