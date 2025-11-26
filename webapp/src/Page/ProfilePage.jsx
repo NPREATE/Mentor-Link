@@ -209,14 +209,17 @@ export default function ProfilePage() {
 										<span className="text-gray-500 font-medium">Khoa</span>
 										<span className="font-semibold text-gray-900">{profile.faculty}</span>
 									</div>
-									{(profile.type === 'tutor' || profile.type === 'Tutor') && (
+									{ (profile.type === 'tutor' || profile.type === 'Tutor') && (
 										<div className="flex justify-between items-center">
 											<span className="text-gray-500 font-medium">Khóa học</span>
 											<span className="font-semibold text-gray-900 flex flex-col items-end">
 												{profile.major
-													? profile.major.split(';').map((s, idx) => (
-														<span key={idx} className="block text-right">{s.trim()}</span>
-													))
+													? profile.major.split(';').map((s, idx) => {
+															const course = courseOptions.find(c => c.id === s.trim());
+															return (
+																<span key={idx} className="block text-right">{course ? course.name : s.trim()}</span>
+															);
+														})
 													: <span className='italic text-gray-400'>Chưa cập nhật</span>
 												}
 											</span>
