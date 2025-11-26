@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Link } from "react-router-dom"
@@ -30,16 +30,16 @@ export default function SignIn() {
   const LOCK_DURATION = 5 * 60 * 1000; // 5 phút
 
   // Kiểm tra trạng thái khóa khi load trang
-  useState(() => {
+  useEffect(() => {
     const lockInfo = JSON.parse(localStorage.getItem('signin_lock') || '{}');
     if (lockInfo.lockedUntil && Date.now() < lockInfo.lockedUntil) {
       setIsLocked(true);
       setLockTimeLeft(Math.ceil((lockInfo.lockedUntil - Date.now()) / 1000));
     }
-  });
+  }, []);
 
-  // Đếm ngược thời gian khóa
-  useState(() => {
+  // Đếm ngược thời gian khóa liên tục
+  useEffect(() => {
     if (!isLocked) return;
     const interval = setInterval(() => {
       const lockInfo = JSON.parse(localStorage.getItem('signin_lock') || '{}');
