@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@apollo/client": "^4.0.9",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/lora": "^5.2.8",
     "@fontsource/manrope": "^5.2.8",
@@ -27,6 +28,7 @@
     "axios": "^1.12.2",
     "classnames": "^2.3.2",
     "framer-motion": "^12.23.24",
+    "graphql": "^16.12.0",
     "lucide-react": "^0.546.0",
     "mammoth": "^1.11.0",
     "poppins": "^0.1.1",
