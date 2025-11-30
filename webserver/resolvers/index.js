@@ -1,9 +1,12 @@
-import { findUserByEmail, findUserById, createUser, _updateUser, getStudentInfoById, upsertStudentCode, getTutorInfoById, upsertTutorMajor} from '../models/userModel.js';
+import { findUserByEmail, findUserById, createUser, _updateUser, getStudentInfoById, upsertStudentCode, getTutorInfoById, upsertTutorMajor } from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 import { UserInputError } from 'apollo-server-errors';
 import { deleteOtp, generateOtp, getOtp, getOtpCount, sendEmailOtp, setOtp } from '../MailSender/otpVerify.js';
 import { enrollCourse, getCourse, getRegisteredCourses, getAvailableCourses, cancelEnrollCourse, courseExists, isCourseRegistered } from '../models/courseModel.js';
 import { openClass, updateClass, deleteClass, getClassesByTutorId, deleteTutorCourseRegistration, deleteMultipleTutorCourseRegistrations } from '../models/tutorModel.js';
+import { getTutorOfCourse, getTutorAutomic } from '../models/tutorModel.js';
+import { joinClass, getStudentSchedules } from '../models/studentModel.js';
+
 const OTP_RATE_LIMIT = 100;
 
 
@@ -92,7 +95,7 @@ export const resolvers = {
             }
         },
 
-        verifyOtp: async (_, { email, code }) => {  
+        verifyOtp: async (_, { email, code }) => {
             try {
                 const otp = getOtp(email);
                 if (!otp) {
@@ -182,7 +185,7 @@ export const resolvers = {
                         .split(';')
                         .map((code) => code.trim())
                         .filter(Boolean);
-                    await upsertTutorMajor ({ tutorId: id, courseCodes });
+                    await upsertTutorMajor({ tutorId: id, courseCodes });
                 }
                 const updatedUser = await findUserById(id);
                 const studentInfo = role === 'student' ? await getStudentInfoById(id) : null;
@@ -251,36 +254,84 @@ export const resolvers = {
                 if (err instanceof UserInputError) throw err;
                 return false;
             }
-        }, 
+        },
 
-        deleteTutorCourseRegistration: async (_, {courseId}, context) => {
-            try { 
-                if (!context.userId) throw UserInputError("Vui lòng đăng nhập"); 
+        deleteTutorCourseRegistration: async (_, { courseId }, context) => {
+            try {
+                if (!context.userId) throw UserInputError("Vui lòng đăng nhập");
 
                 const res = await deleteTutorCourseRegistration(context.userId, courseId);
-                
+
                 return res;
 
-            } catch (err) { 
+            } catch (err) {
                 console.log("deleteTutorCourseRegistration error", err);
                 return false;
             }
         },
 
-        deleteMultipleTutorCourseRegistrations: async (_, {courseIds}, context) => {
-            try { 
-                if (!context.userId) throw UserInputError("Vui lòng đăng nhập"); 
+        deleteMultipleTutorCourseRegistrations: async (_, { courseIds }, context) => {
+            try {
+                if (!context.userId) throw UserInputError("Vui lòng đăng nhập");
                 if (!Array.isArray(courseIds) || courseIds.length === 0) {
                     return true;
                 }
 
                 const res = await deleteMultipleTutorCourseRegistrations(context.userId, courseIds);
-                
+
                 return res;
 
-            } catch (err) { 
+            } catch (err) {
                 console.log("deleteMultipleTutorCourseRegistrations error", err);
                 return false;
+            }
+        }, 
+
+        joinClass: async (_, { classId, courseId }, context) => {
+            try {
+                if (!context.userId) {
+                    throw new UserInputError('Bạn cần đăng nhập để tham gia lớp học');
+                }
+
+                if (!classId) {
+                    throw new UserInputError('Vui lòng chọn lớp học');
+                }
+
+                if (!courseId) {
+                    throw new UserInputError('Vui lòng chọn môn học');
+                }
+
+                const success = await joinClass(context.userId, classId, courseId);
+                return success;
+            } catch (err) {
+                // if (err instanceof UserInputError) {
+                //     throw err;
+                // }
+                
+                if (err.code === 'CLASS_FULL') {
+                    throw new UserInputError('Lớp học đã đầy');
+                }
+
+                
+                if (err.code === 'COURSE_ALREADY_REGISTERED' || err.code === '450009') {
+                    throw new UserInputError('Bạn đã đăng ký môn này');
+                }
+                
+                if (err.code === 'ER_NO_REFERENCED_ROW_2' || err.errno === 1452) {
+                    throw new UserInputError('Lớp học không tồn tại');
+                }
+                
+                if ( err.code === 'SCHEDULE_CONFLICT'  || err.code === '45000' || err.c) {
+                    const triggerMessage = 'Không thể tham gia lớp học do trùng lịch' || err.sqlMessage || err.message ;
+                    throw new UserInputError(triggerMessage);
+                }
+                
+                if (err.code && err.code.startsWith('ER_')) {
+                    const dbMessage = err.sqlMessage || err.message || 'Lỗi cơ sở dữ liệu';
+                    throw new UserInputError(`Không thể tham gia lớp học: ${dbMessage}`);
+                }
+                
+                throw new UserInputError('Không thể tham gia lớp học. Vui lòng thử lại sau.');
             }
         }
     },
@@ -301,7 +352,6 @@ export const resolvers = {
         },
 
         getAvailableCourses: async (_, args, context) => {
-            console.log('getAvailableCourses context:', context);
 
             if (!context.userId) {
                 console.warn('No userId found in context, returning mock data');
@@ -325,8 +375,6 @@ export const resolvers = {
         },
 
         getRegisteredCourses: async (_, args, context) => {
-            console.log('getRegisteredCourses context:', context);
-
             if (!context.userId) {
                 console.warn('No userId found in context, returning mock data');
                 // Return mock data if not authenticated
@@ -371,17 +419,6 @@ export const resolvers = {
             }
         },
 
-        // getClassByTutorID: async (_, __, context) => {
-        //     if (!context.userId) {
-        //         throw new UserInputError('Bạn cần đăng nhập');
-        //     }
-        //     const cls = await getFirstClassByTutorId(context.userId);
-        //     if (!cls) {
-        //         throw new UserInputError('Không tìm thấy lớp');
-        //     }
-        //     return cls;
-        // },
-
         getClassesByTutorID: async (_, __, context) => {
             if (!context.userId) {
                 throw new UserInputError('Bạn cần đăng nhập');
@@ -389,5 +426,119 @@ export const resolvers = {
             const list = await getClassesByTutorId(context.userId);
             return Array.isArray(list) ? list : [];
         },
+
+        getTutorOfCourse: async (_, { courseId }, context) => {
+            try {
+                if (!context.userId) throw new UserInputError("Vui lòng đăng nhập");
+
+                const rows = await getTutorOfCourse(courseId); 
+                
+                if (!rows || rows.length === 0) {
+                    return [];
+                }
+
+                const tutorMap = new Map();
+                
+                for (const row of rows) {
+                    const tutorId = String(row.TutorID);
+                    
+                    if (!tutorMap.has(tutorId)) {
+                        tutorMap.set(tutorId, {
+                            name: row.TutorName || '',
+                            desc: row.Introduce || null,
+                            classes: []
+                        });
+                    }
+                    
+                    const tutor = tutorMap.get(tutorId);
+                    tutor.classes.push({
+                        id: String(row.ClassID),
+                        tutorId: tutorId,
+                        start: row.StartTime ? row.StartTime.substring(0, 5) : null,
+                        end: row.EndTime ? row.EndTime.substring(0, 5) : null,
+                        day: row.TeachingDay,
+                        method: row.method || null
+                    });
+                }
+                
+                return Array.from(tutorMap.values());
+            } catch (err) {
+                console.log("getTutorOfCourse error", err); 
+                throw new Error("getTutorOfCourse error", err);
+            }
+        },
+
+        getStudentSchedules: async (_, __, context) => {
+            try {
+                if (!context.userId) {
+                    throw new UserInputError('Bạn cần đăng nhập để xem lịch học');
+                }
+
+                const rows = await getStudentSchedules(context.userId);
+                
+                if (!rows || rows.length === 0) {
+                    return [];
+                }
+
+                const schedules = rows.map((row) => ({
+                    tutorName: row.TutorName || '',
+                    courseName: row.CourseName || '',
+                    day: row.TeachingDay || '',
+                    method: row.method || '',
+                    start: row.StartTime ? row.StartTime.substring(0, 5) : '',
+                    end: row.EndTime ? row.EndTime.substring(0, 5) : ''
+                }));
+
+                return schedules;
+            } catch (err) {
+                console.error("getStudentSchedules error", err);
+                if (err instanceof UserInputError) throw err;
+                throw new Error("Không thể lấy lịch học");
+            }
+        }, 
+
+        getTutorAutomic: async (_, { courseId }, context) => {
+            try {
+                if (!context.userId) {
+                    throw new UserInputError('Bạn cần đăng nhập để sử dụng tính năng ghép tự động');
+                }
+
+                if (!courseId) {
+                    throw new UserInputError('Vui lòng chọn môn học');
+                }
+
+                const rows = await getTutorAutomic(courseId, context.userId);
+
+                if (!rows || rows.length === 0) {
+                    return null;
+                }
+
+                const firstRow = rows[0];
+                const tutorId = String(firstRow.TutorID);
+
+                const tutorClasses = rows
+                    .filter(row => String(row.TutorID) === tutorId)
+                    .map(row => ({
+                        id: String(row.ClassID),
+                        tutorId: tutorId,
+                        start: row.StartTime ? row.StartTime.substring(0, 5) : null,
+                        end: row.EndTime ? row.EndTime.substring(0, 5) : null,
+                        day: row.TeachingDay,
+                        method: row.method || null
+                    }));
+
+                return {
+                    name: firstRow.TutorName || '',
+                    desc: firstRow.Introduce || null,
+                    classes: tutorClasses
+                };
+            } catch (err) {
+                console.error("getTutorAutomic error", err);
+                if (err instanceof UserInputError) {
+                    throw err;
+                }
+                throw new Error("Không thể lấy tutor tự động");
+            }
+        }
     }
 }

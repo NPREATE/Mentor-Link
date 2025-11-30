@@ -1,15 +1,15 @@
 import dbPool from '../database.js';
 
 const mockCourses = [
-  { id: 'C02003', name: 'Cấu trúc dữ liệu và giải thuật', faculty: 'Khoa Khoa học và Kỹ thuật Máy tính' },
-  { id: 'M11005', name: 'Giải tích 2', faculty: 'Khoa Khoa Học Ứng Dụng' },
-  { id: 'C01007', name: 'Cấu trúc rời rạc', faculty: 'Khoa Khoa học và Kỹ thuật Máy tính' },
-  { id: 'C002011', name: 'Mô hình hóa toán học', faculty: 'Khoa Khoa học và Kỹ thuật Máy tính', content: 'Giới thiệu các mô hình toán học cơ bản ứng dụng trong kỹ thuật và khoa học máy tính.', reference: 'Nguyễn Văn A - Giáo trình Mô hình toán học, NXB Khoa học Tự nhiên, 2020.' },
+    { id: 'C02003', name: 'Cấu trúc dữ liệu và giải thuật', faculty: 'Khoa Khoa học và Kỹ thuật Máy tính' },
+    { id: 'M11005', name: 'Giải tích 2', faculty: 'Khoa Khoa Học Ứng Dụng' },
+    { id: 'C01007', name: 'Cấu trúc rời rạc', faculty: 'Khoa Khoa học và Kỹ thuật Máy tính' },
+    { id: 'C002011', name: 'Mô hình hóa toán học', faculty: 'Khoa Khoa học và Kỹ thuật Máy tính', content: 'Giới thiệu các mô hình toán học cơ bản ứng dụng trong kỹ thuật và khoa học máy tính.', reference: 'Nguyễn Văn A - Giáo trình Mô hình toán học, NXB Khoa học Tự nhiên, 2020.' },
 ];
 
 export async function getCourse() {
     try {
-        const [rows] = await dbPool.execute('SELECT Cid as id, Cname as name, Faculty as faculty FROM `Course`'); 
+        const [rows] = await dbPool.execute('SELECT Cid as id, Cname as name, Faculty as faculty FROM `Course`');
         return rows;
     } catch (err) {
         console.error('Error in getCourse:', err.message);
@@ -49,7 +49,7 @@ export async function getAvailableCourses(userId) {
     }
 }
 
-export async function enrollCourse (userid, courseid) {
+export async function enrollCourse(userid, courseid) {
     try {
         // Ensure course exists
         const [exists] = await dbPool.execute('SELECT 1 FROM `Course` WHERE Cid = ? LIMIT 1', [courseid]);
@@ -99,14 +99,19 @@ export async function isCourseRegistered(userId, courseId) {
 
 export async function cancelEnrollCourse(userId, courseId) {
     try {
-        const [result] = await dbPool.execute(
-            'DELETE FROM `CourseRegistration` WHERE UserID = ? AND CourseID = ?',
-            [userId, courseId]
-        );
+        const [[result], [studentofclass]] = await Promise.all([
+            dbPool.execute(
+                'DELETE FROM CourseRegistration WHERE UserID = ? AND CourseID = ?',
+                [userId, courseId]
+            ), 
+            dbPool.execute(
+                `DELETE FROM StudentOfClass WHERE StudentID = ? AND CourseID = ?`, 
+                [userId, courseId]
+            )
+        ]);
         return result.affectedRows > 0;
     } catch (err) {
         console.error('Error in cancelEnrollCourse:', err.message);
-        // Return success for mock
-        return true;
+        return false;
     }
 } 

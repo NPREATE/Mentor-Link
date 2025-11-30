@@ -149,3 +149,110 @@ export async function deleteMultipleTutorCourseRegistrations(userId, courseIds) 
 
     return result.affectedRows > 0;
 }
+
+export async function getTutorOfCourse(courseId) {
+    const [rows] = await dbPool.execute(
+        `
+        SELECT 
+            c.ClassID,
+            c.StartTime,
+            c.EndTime,
+            c.TeachingDay,
+            c.method,
+            u.UserID AS TutorID,
+            u.FullName AS TutorName,
+            u.Email,
+            u.Phone,
+            u.Introduce
+        FROM TutorCourseRegistration tcr
+        JOIN User u
+            ON u.UserID = tcr.UserID       
+        JOIN Class c
+            ON c.TutorID = u.UserID      
+        WHERE tcr.CourseID = ?
+        `, 
+        [courseId]
+    ); 
+
+    return rows || [];
+}
+
+
+export async function getTutorAutomic(courseId, studentId) {
+    const [rows] = await dbPool.execute(
+        `
+        SELECT 
+            c.ClassID,
+            c.StartTime,
+            c.EndTime,
+            c.TeachingDay,
+            c.method,
+            u.UserID AS TutorID,
+            u.FullName AS TutorName,
+            u.Email,
+            u.Phone,
+            u.Introduce,
+            COALESCE(COUNT(soc.StudentID), 0) AS StudentCount
+        FROM TutorCourseRegistration tcr
+        JOIN User u
+            ON u.UserID = tcr.UserID       
+        JOIN Class c
+            ON c.TutorID = u.UserID
+        LEFT JOIN StudentOfClass soc
+            ON soc.ClassID = c.ClassID
+        WHERE tcr.CourseID = ?
+        GROUP BY c.ClassID, c.StartTime, c.EndTime, c.TeachingDay, c.method, 
+                 u.UserID, u.FullName, u.Email, u.Phone, u.Introduce
+        HAVING StudentCount < 5
+        `, 
+        [courseId]
+    );
+
+    if (!rows || rows.length === 0) {
+        return [];
+    }
+
+    if (studentId) {
+        const [studentClasses] = await dbPool.execute(
+            `
+            SELECT 
+                c.ClassID,
+                c.StartTime,
+                c.EndTime,
+                c.TeachingDay
+            FROM StudentOfClass soc
+            JOIN Class c ON soc.ClassID = c.ClassID
+            WHERE soc.StudentID = ?
+            `,
+            [studentId]
+        );
+
+        const hasScheduleConflict = (class1, class2) => {
+            // Kiểm tra TeachingDay có trùng không
+            const days1 = class1.TeachingDay ? class1.TeachingDay.split('-') : [];
+            const days2 = class2.TeachingDay ? class2.TeachingDay.split('-') : [];
+            const hasCommonDay = days1.some(day => days2.includes(day));
+            
+            if (!hasCommonDay) {
+                return false; 
+            }
+
+            const start1 = String(class1.StartTime || '').substring(0, 5); 
+            const end1 = String(class1.EndTime || '').substring(0, 5);
+            const start2 = String(class2.StartTime || '').substring(0, 5);
+            const end2 = String(class2.EndTime || '').substring(0, 5);
+
+            return start1 < end2 && start2 < end1;
+        };
+
+        const filteredRows = rows.filter(row => {
+            return !studentClasses.some(studentClass => 
+                hasScheduleConflict(row, studentClass)
+            );
+        });
+
+        return filteredRows;
+    }
+
+    return rows;
+}

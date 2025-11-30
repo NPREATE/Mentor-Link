@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import Header from '../Components/header'
-import { getRegisteredCourses } from '../Utils/courseRequest'
-import { getTutorsByCourse } from '../Utils/tutors'
+import { getStudentSchedules } from '../Utils/studentUtil'
 
 export default function MyCourses() {
   const [search, setSearch] = useState('')
@@ -13,18 +12,30 @@ export default function MyCourses() {
   async function fetchCourses() {
     try {
       setLoading(true)
-      const regs = await getRegisteredCourses()
-      // Map each registered course to a matched tutor (first match for demo)
-      const mapped = (regs || []).map((c) => {
-        const tutors = getTutorsByCourse(c.id)
-        const tutor = tutors && tutors.length ? tutors[0] : null
-        // choose first schedule if present
-        const schedule = tutor?.schedules?.[0] || { label: 'N/A', day: 'Chưa có', start: '', end: '' }
-        return { course: c, tutor, schedule }
+      const schedules = await getStudentSchedules()
+      
+      const mapped = (schedules || []).map((schedule, index) => {
+        return {
+          course: {
+            id: `${schedule.courseName}-${index}`, 
+            name: schedule.courseName || '',
+            faculty: '' 
+          },
+          tutor: {
+            name: schedule.tutorName || 'Chưa có tutor'
+          },
+          schedule: {
+            label: `Lịch ${schedule.day}`,
+            day: schedule.day || 'Chưa có',
+            start: schedule.start || '',
+            end: schedule.end || ''
+          }
+        }
       })
+      
       setCourses(mapped)
     } catch (err) {
-      console.error('Failed to load registered courses', err)
+      console.error('Failed to load student schedules', err)
       setCourses([])
     } finally {
       setLoading(false)

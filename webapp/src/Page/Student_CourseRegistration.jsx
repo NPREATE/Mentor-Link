@@ -38,15 +38,15 @@ export default function Student_CourseRegistration() {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching courses from backend...');
+      // console.log('Fetching courses from backend...');
       
       const [availData, registeredData] = await Promise.all([
         getAvailableCourses(),
         getRegisteredCourses()
       ]);
       
-      console.log('Available courses:', availData);
-      console.log('Registered courses:', registeredData);
+      // console.log('Available courses:', availData);
+      // console.log('Registered courses:', registeredData);
       
       // Use API data directly; empty array is valid (user enrolled all or has no registrations)
       setAvailable(availData || []);

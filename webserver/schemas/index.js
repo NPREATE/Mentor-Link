@@ -47,6 +47,20 @@ export const typeDefs = `#graphql
     method: String
   }
 
+  type TutorOfCourse { 
+    name: String!
+    desc: String
+    classes: [Class!]
+  }
+  
+  type StudentSchedule {
+    tutorName: String!
+    courseName: String!
+    day: String!
+    method: String!
+    start: String!
+    end: String!
+   }
 
   type Mutation {
     signup(name: String!, email: String!, password: String!, type: String!): AuthPayload
@@ -69,15 +83,19 @@ export const typeDefs = `#graphql
     updateClass(classId: ID!, start: String, end: String, day: String, method: String): Class
     deleteTutorCourseRegistration(courseId: String!): Boolean!
     deleteMultipleTutorCourseRegistrations(courseIds: [String!]!): Boolean!
+    joinClass(classId: String!, courseId: String!): Boolean!
   }
 
   type Query {
     checkExistUser(email: String! ): Boolean!
     getCourse: [Course!]!
-    getAvailableCourses: [Course!]!
-    getRegisteredCourses: [RegisteredCourse!]!
+    getAvailableCourses: [Course!]
+    getRegisteredCourses: [RegisteredCourse!]
     getUserByEmail(email: String!): User
-    getClassesByTutorID: [Class!]!
+    getClassesByTutorID: [Class!]
+    getTutorOfCourse(courseId: String!): [TutorOfCourse!]
+     getTutorAutomic(courseId: String!): TutorOfCourse
+    getStudentSchedules: [StudentSchedule!]
   }
 `;
 

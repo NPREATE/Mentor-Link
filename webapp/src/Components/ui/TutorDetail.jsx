@@ -6,12 +6,12 @@ export default function TutorDetail({ tutor, onBack, onConfirm }) {
   if (!tutor) return null;
 
   const schedules = Array.isArray(tutor.schedules) && tutor.schedules.length >= 1
-    ? tutor.schedules.slice(0, 2)
+    ? tutor.schedules
     : [
       { id: 's1', label: 'Lịch A', day: 'Thứ 2, Thứ 4, Thứ 6', start: '19:00', end: '22:00' },
       { id: 's2', label: 'Lịch B', day: 'Thứ 3, Thứ 5', start: '18:00', end: '20:00' }
     ];
-
+    
   
 
   return (
@@ -31,13 +31,13 @@ export default function TutorDetail({ tutor, onBack, onConfirm }) {
         <div className="flex-1">
           <h3 className="text-3xl font-bold mb-3">{tutor.name}</h3>
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-yellow-400 text-xl">⭐</span> 
-            <strong className="text-lg">{tutor.star}</strong> 
-            <span className="text-gray-400 text-sm">({tutor.reviews} đánh giá)</span>
+            {/* <span className="text-yellow-400 text-xl">⭐</span>  */}
+            {/* <strong className="text-lg">{tutor.star}</strong>  */}
+            {/* <span className="text-gray-400 text-sm">({tutor.reviews} đánh giá)</span> */}
           </div>
           <div className="flex items-center gap-12 text-base">
-            <div><strong>GPA:</strong> {tutor.gpa}</div>
-            <div><strong>Kinh nghiệm:</strong> {tutor.exp} năm</div>
+            {/* <div><strong>GPA:</strong> {tutor.gpa}</div> */}
+            {/* <div><strong>Kinh nghiệm:</strong> {tutor.exp} năm</div> */}
           </div>
         </div>
       </div>

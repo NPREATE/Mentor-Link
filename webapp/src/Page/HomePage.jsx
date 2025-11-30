@@ -7,7 +7,6 @@ import useAuth from "../ContextAPI/UseAuth"
 
 export default function HomePage() {
   const { user } = useAuth();  
-  console.log(user.type);
 
   return (
     <div className="min-h-screen bg-white">

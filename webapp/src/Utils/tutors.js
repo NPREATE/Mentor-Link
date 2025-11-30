@@ -1,7 +1,6 @@
 import { graphQLRequest } from './request';
 
 
-// Mock tutor data and helper to fetch tutors by course id.
 const TUTORS = [
   {
     id: 't1',
@@ -66,6 +65,7 @@ export function getTutorsByCourse(courseId) {
   const cid = String(courseId).toUpperCase();
   return TUTORS.filter(t => Array.isArray(t.courses) && t.courses.map(c => c.toUpperCase()).includes(cid));
 }
+
 
 
 
@@ -186,5 +186,64 @@ export async function deleteMultipleTutorCourseRegistrations(courseIds) {
   return data.data?.deleteMultipleTutorCourseRegistrations === true;
 }
 
-// export default TUTORS;
+export async function getTutorofCourse(courseId) {
+  const query = `
+    query GetTutorOfCourse($courseId: String!) {
+      getTutorOfCourse(courseId: $courseId) {
+        classes {
+          start
+          tutorId
+          method
+          id
+          end
+          day
+        }
+        desc
+        name
+      }
+    }
+  `; 
 
+  const data = await graphQLRequest({ 
+    query, 
+    variables: {courseId: courseId}
+  }); 
+
+  return data.data?.getTutorOfCourse || [];
+}
+
+export async function getTutorAutomic(courseId) {
+  const query = `
+    query GetTutorAutomic($courseId: String!) {
+      getTutorAutomic(courseId: $courseId) {
+        classes {
+          start
+          tutorId
+          method
+          id
+          end
+          day
+        }
+        desc
+        name
+      }
+    }
+  `;
+
+  const data = await graphQLRequest({ 
+    query, 
+    variables: { 
+      courseId
+    }
+  }); 
+
+  // if (data.errors && data.errors.length > 0) {
+  //   const firstError = data.errors[0];
+  //   const errorMessage = firstError?.message || 'Có lỗi xảy ra khi lấy tutor tự động';
+  //   const error = new Error(errorMessage);
+  //   error.graphQLErrors = data.errors;
+  //   throw error;
+  // }
+
+  return data.data?.getTutorAutomic || null;
+}
