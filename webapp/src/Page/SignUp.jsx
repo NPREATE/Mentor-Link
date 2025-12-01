@@ -45,7 +45,6 @@ export default function SignUp() {
 
   const handleVerifyOtp = async (code) => {
     const res = await verifyOtp(otpEmail, String(code.trim()));
-    console.log("handleverifyres", res);
     const is_success = !!res?.success;
     if (!is_success) {
       throw new Error("Mã xác thực không chính xác")

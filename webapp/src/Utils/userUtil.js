@@ -40,7 +40,7 @@ export const findUser = async (email) => {
             email : email,
         }
     }); 
-    return data;
+    return data.data?.checkExistUser;
 }
 
 export const fetchUserData = async (email) => {
