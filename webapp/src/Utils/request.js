@@ -1,4 +1,4 @@
-const GRAPHQL_SERVER = 'http://localhost:4000/graphql'
+const GRAPHQL_SERVER = 'https://mentor-link.onrender.com/graphql';
 
 
 export const graphQLRequest = async (payload, options = {}) => {

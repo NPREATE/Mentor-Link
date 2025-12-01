@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const GRAPHQL_ENDPOINT = 'http://localhost:4000/graphql';
+// const GRAPHQL_ENDPOINT = 'http://localhost:4000/graphql';
+const GRAPHQL_ENDPOINT = 'https://mentor-link.onrender.com/graphql';
 
 function getAuthToken() {
   return localStorage.getItem('token');

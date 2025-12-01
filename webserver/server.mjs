@@ -24,7 +24,13 @@ const server = new ApolloServer({
     resolvers,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
 });
-
+const allowedOrigins = [
+  "http://localhost:5173",  // Frontend chạy dưới máy (để test)
+  "http://localhost:4000",  // Backend chạy dưới máy
+  "https://mentor-link.onrender.com", // Link chính nó
+  // Tạm thời bạn cứ deploy backend trước, lát có link frontend thì quay lại đây điền thêm vào
+  "https://ten-du-an-frontend.onrender.com" 
+];
 async function start() {
     try {
         try {
@@ -55,10 +61,18 @@ async function start() {
                 return res.status(403).json({ message: 'Forbidden', error: err });
             }
         };
+        // Route trang chủ để test server sống hay chết
+        app.get('/', (req, res) => {
+            res.status(200).send("Server GraphQL Mentor Link đang chạy ngon lành!");
+        });
+        
 
         app.use(
             '/graphql',
-            cors(),
+            cors({
+                origin: allowedOrigins, // Dùng danh sách ở trên
+                credentials: true       // Cho phép gửi token/cookie
+            }),
             authorizationJWT,
             bodyParser.json(),
             expressMiddleware(server, {
