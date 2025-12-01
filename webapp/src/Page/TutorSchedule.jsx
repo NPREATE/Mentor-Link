@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Header from "../Components/header";
-import { openClass , updateClass , deleteClass, getMyClasses } from "../Utils/tutors";
+import { openClass, updateClass, deleteClass, getMyClasses } from "../Utils/tutors";
 
 /* -------------------------------------------------------------------------- */
-/*                             DATA: Day / Time / Type                        */
+/* DATA: Day / Time / Type                         */
 /* -------------------------------------------------------------------------- */
 
 const DAY_OPTIONS = [
@@ -24,7 +24,7 @@ const TIME_OPTIONS = [
 const TYPE_OPTIONS = ["Online", "Offline"];
 
 /* -------------------------------------------------------------------------- */
-/*                             POPUP COMPONENT                                */
+/* POPUP COMPONENT                                 */
 /* -------------------------------------------------------------------------- */
 
 function Popup({ title, children, onClose }) {
@@ -49,7 +49,7 @@ function Popup({ title, children, onClose }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                              MAIN COMPONENT                                */
+/* MAIN COMPONENT                                 */
 /* -------------------------------------------------------------------------- */
 
 export default function TutorSchedule() {
@@ -69,7 +69,7 @@ export default function TutorSchedule() {
   const [deleteItem, setDeleteItem] = useState(null);
 
   /* ---------------------------------------------------------------------- */
-  /*                              ĐĂNG KÝ LỊCH                              */
+  /* ĐĂNG KÝ LỊCH                              */
   /* ---------------------------------------------------------------------- */
 
   const openRegisterPopup = () => {
@@ -87,7 +87,7 @@ export default function TutorSchedule() {
       const h = String(parseInt(hh, 10));
       return `${h}h`;
     };
-    const time = `${toTimeLabel(c.start)}-${toTimeLabel(c.end)}`; 
+    const time = `${toTimeLabel(c.start)}-${toTimeLabel(c.end)}`;
     let type = c.method || 'Online';
     let roomVal = null;
     if (typeof c.method === 'string' && c.method.toLowerCase().startsWith('offline')) {
@@ -125,8 +125,24 @@ export default function TutorSchedule() {
     return { start: s, end: e };
   };
 
+  // --- HÀM KIỂM TRA TRÙNG LỊCH (MỚI THÊM) ---
+  const isScheduleConflict = (newDay, newTime, excludeId = null) => {
+    return schedules.some((s) => {
+      // Nếu đang sửa, bỏ qua chính item đó
+      if (excludeId && s.id === excludeId) return false;
+      // Kiểm tra trùng Ngày và Giờ
+      return s.day === newDay && s.time === newTime;
+    });
+  };
+
   const handleRegister = async () => {
     if (!selectedDay || !selectedTime || !selectedType) return;
+
+    // --- KIỂM TRA TRÙNG TRƯỚC KHI LƯU ---
+    if (isScheduleConflict(selectedDay, selectedTime)) {
+      alert("Lịch này đã tồn tại, vui lòng chọn khung khác");
+      return;
+    }
 
     const newItem = {
       id: Date.now(),
@@ -157,7 +173,7 @@ export default function TutorSchedule() {
   };
 
   /* ---------------------------------------------------------------------- */
-  /*                                  SỬA                                   */
+  /* SỬA                                   */
   /* ---------------------------------------------------------------------- */
 
   const openEditPopup = (item) => {
@@ -170,6 +186,12 @@ export default function TutorSchedule() {
   };
 
   const handleEdit = async () => {
+    // --- KIỂM TRA TRÙNG KHI SỬA ---
+    if (isScheduleConflict(selectedDay, selectedTime, editingItem.id)) {
+      alert("Lịch dạy này bị trùng với một lịch khác đã có!");
+      return;
+    }
+
     const updated = schedules.map((s) =>
       s.id === editingItem.id
         ? {
@@ -193,7 +215,7 @@ export default function TutorSchedule() {
   };
 
   /* ---------------------------------------------------------------------- */
-  /*                                  XOÁ                                    */
+  /* XOÁ                                   */
   /* ---------------------------------------------------------------------- */
 
   const openDeletePopup = (item) => {
@@ -212,7 +234,7 @@ export default function TutorSchedule() {
   };
 
   /* ---------------------------------------------------------------------- */
-  /*                                 RENDER                                  */
+  /* RENDER                                  */
   /* ---------------------------------------------------------------------- */
 
   return (
