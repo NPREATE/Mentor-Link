@@ -29,7 +29,7 @@ const allowedOrigins = [
   "http://localhost:4000",  // Backend chạy dưới máy
   "https://mentor-link.onrender.com", // Link chính nó
   // Tạm thời bạn cứ deploy backend trước, lát có link frontend thì quay lại đây điền thêm vào
-  "https://ten-du-an-frontend.onrender.com" 
+  "https://mentorlink-5g2n.onrender.com" 
 ];
 async function start() {
     try {
