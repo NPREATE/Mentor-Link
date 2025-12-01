@@ -155,7 +155,7 @@ export default function TutorSchedule() {
         return;
       }
       if (!isValidRoomFormat(room)) {
-        alert("Tên phòng sai định dạng! Vui lòng nhập đúng mẫu: A4-508 (Chữ in hoa + Số - 3 Chữ số)");
+        alert("Tên phòng sai định dạng! Vui lòng nhập đúng mẫu");
         return;
       }
     }
