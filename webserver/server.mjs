@@ -49,6 +49,9 @@ async function start() {
                 next();
             } catch (err) {
                 console.log({ err });
+                if (err && err.name === 'TokenExpiredError') {
+                    return res.status(401).json({ message: 'Token expired', code: 'TOKEN_EXPIRED', expiredAt: err.expiredAt });
+                }
                 return res.status(403).json({ message: 'Forbidden', error: err });
             }
         };
